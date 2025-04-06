@@ -1,0 +1,1067 @@
+<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Bipedal PPO Trainer</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.1.0/dist/tf.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .stats-panel {
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+        }
+        
+        .dark .stats-panel {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Custom slider styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #ddd;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #5D5CDE;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .dark input[type="range"] {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors">
+    <div class="container mx-auto px-4 py-6">
+        <header class="mb-6">
+            <h1 class="text-3xl font-bold mb-2">3D Bipedal PPO Trainer</h1>
+            <p class="text-gray-600 dark:text-gray-400">Train an AI agent to walk with a reinforcement learning approach</p>
+        </header>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 3D Simulation Area -->
+            <div class="lg:col-span-2 relative">
+                <div id="simulation-container" class="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 h-[450px] md:h-[550px] lg:h-[600px]"></div>
+                
+                <!-- Overlay Stats -->
+                <div class="stats-panel absolute top-4 left-4 text-sm">
+                    <div>Episode: <span id="episode-counter">0</span></div>
+                    <div>Reward: <span id="reward-counter">0.00</span></div>
+                    <div>Steps: <span id="steps-counter">0</span></div>
+                </div>
+                
+                <!-- Control buttons -->
+                <div class="absolute bottom-4 left-4 flex flex-wrap gap-2">
+                    <button id="start-button" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors">
+                        Start Training
+                    </button>
+                    <button id="reset-button" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors">
+                        Reset
+                    </button>
+                    <button id="view-button" class="bg-gray-700 dark:bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors">
+                        Change View
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Controls Panel -->
+            <div class="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg h-fit">
+                <h2 class="text-xl font-bold mb-4">Training Settings</h2>
+                
+                <!-- Learning Parameters -->
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-3">Learning Parameters</h3>
+                    
+                    <div class="mb-3">
+                        <label for="learning-rate" class="block mb-1 text-sm">Learning Rate: <span id="learning-rate-value">0.0003</span></label>
+                        <input type="range" id="learning-rate" min="0.00001" max="0.001" step="0.00001" value="0.0003" class="w-full">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="discount-factor" class="block mb-1 text-sm">Discount Factor: <span id="discount-factor-value">0.99</span></label>
+                        <input type="range" id="discount-factor" min="0.8" max="0.999" step="0.001" value="0.99" class="w-full">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="batch-size" class="block mb-1 text-sm">Batch Size: <span id="batch-size-value">64</span></label>
+                        <input type="range" id="batch-size" min="16" max="256" step="16" value="64" class="w-full">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="clip-ratio" class="block mb-1 text-sm">Clip Ratio: <span id="clip-ratio-value">0.2</span></label>
+                        <input type="range" id="clip-ratio" min="0.1" max="0.5" step="0.01" value="0.2" class="w-full">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="epochs" class="block mb-1 text-sm">Epochs: <span id="epochs-value">3</span></label>
+                        <input type="range" id="epochs" min="1" max="10" step="1" value="3" class="w-full">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="entropy-coef" class="block mb-1 text-sm">Entropy Coefficient: <span id="entropy-coef-value">0.01</span></label>
+                        <input type="range" id="entropy-coef" min="0.001" max="0.1" step="0.001" value="0.01" class="w-full">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="value-coef" class="block mb-1 text-sm">Value Coefficient: <span id="value-coef-value">0.5</span></label>
+                        <input type="range" id="value-coef" min="0.1" max="1.0" step="0.05" value="0.5" class="w-full">
+                    </div>
+                </div>
+                
+                <!-- Environment Settings -->
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-3">Environment Settings</h3>
+                    
+                    <div class="mb-3">
+                        <label for="gravity" class="block mb-1 text-sm">Gravity Strength: <span id="gravity-value">9.8</span></label>
+                        <input type="range" id="gravity" min="1" max="20" step="0.1" value="9.8" class="w-full">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="joint-strength" class="block mb-1 text-sm">Joint Strength: <span id="joint-strength-value">50</span></label>
+                        <input type="range" id="joint-strength" min="10" max="100" step="1" value="50" class="w-full">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sim-speed" class="block mb-1 text-sm">Simulation Speed: <span id="sim-speed-value">1.0</span>x</label>
+                        <input type="range" id="sim-speed" min="0.1" max="5" step="0.1" value="1.0" class="w-full">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="ground-friction" class="block mb-1 text-sm">Ground Friction: <span id="ground-friction-value">0.7</span></label>
+                        <input type="range" id="ground-friction" min="0.1" max="1.0" step="0.05" value="0.7" class="w-full">
+                    </div>
+                </div>
+                
+                <!-- Training Progress -->
+                <div>
+                    <h3 class="font-semibold mb-3">Training Progress</h3>
+                    <div class="bg-white dark:bg-gray-900 rounded p-4 h-32">
+                        <canvas id="reward-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Parameter Details Panel -->
+                <div class="mt-6 p-4 bg-white dark:bg-gray-900 rounded-lg text-sm">
+                    <h3 class="font-semibold mb-2">All Parameters</h3>
+                    <div id="all-params" class="space-y-1 overflow-y-auto max-h-40 text-xs font-mono">
+                        <!-- Parameters will be listed here via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check for dark mode preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // Simulation parameters
+        let paused = true;
+        let camera, scene, renderer, world;
+        let biped, ground;
+        let currentEpisode = 0;
+        let currentReward = 0;
+        let currentSteps = 0;
+        let lastPosition = { x: 0, z: 0 };
+        let rewardHistory = [];
+        let viewMode = 0; // 0: follow, 1: side, 2: top
+        let bipedBodies = [];
+
+        // PPO Agent parameters
+        let ppoParams = {
+            learningRate: 0.0003,
+            discountFactor: 0.99,
+            batchSize: 64,
+            epochs: 3,
+            clipRatio: 0.2,
+            entropyCoef: 0.01,
+            valueCoef: 0.5,
+            maxGradNorm: 0.5,
+            lambdaGAE: 0.95, // Generalized Advantage Estimation lambda
+            horizon: 1024,   // PPO trajectory length
+            miniBatchSize: 32,
+            targetKL: 0.01,  // Target KL divergence threshold
+            clipValue: 0.2,  // Value clipping parameter
+            normalizeAdvantages: true,
+            normalizeReturns: true,
+            normalizeObservations: true
+        };
+
+        // Environment parameters
+        let envParams = {
+            gravity: 9.8,
+            jointStrength: 50,
+            groundFriction: 0.7,
+            rewardScale: 1.0,
+            simSpeed: 1.0,     // Simulation speed multiplier
+            timeStep: 1 / 60,  // Physics time step
+            substeps: 2        // Physics substeps
+        };
+
+        // Input sliders
+        const learningRateSlider = document.getElementById('learning-rate');
+        const discountFactorSlider = document.getElementById('discount-factor');
+        const batchSizeSlider = document.getElementById('batch-size');
+        const clipRatioSlider = document.getElementById('clip-ratio');
+        const epochsSlider = document.getElementById('epochs');
+        const entropyCoefSlider = document.getElementById('entropy-coef');
+        const valueCoefSlider = document.getElementById('value-coef');
+        const gravitySlider = document.getElementById('gravity');
+        const jointStrengthSlider = document.getElementById('joint-strength');
+        const simSpeedSlider = document.getElementById('sim-speed');
+        const groundFrictionSlider = document.getElementById('ground-friction');
+
+        // Output value spans
+        const learningRateValue = document.getElementById('learning-rate-value');
+        const discountFactorValue = document.getElementById('discount-factor-value');
+        const batchSizeValue = document.getElementById('batch-size-value');
+        const clipRatioValue = document.getElementById('clip-ratio-value');
+        const epochsValue = document.getElementById('epochs-value');
+        const entropyCoefValue = document.getElementById('entropy-coef-value');
+        const valueCoefValue = document.getElementById('value-coef-value');
+        const gravityValue = document.getElementById('gravity-value');
+        const jointStrengthValue = document.getElementById('joint-strength-value');
+        const simSpeedValue = document.getElementById('sim-speed-value');
+        const groundFrictionValue = document.getElementById('ground-friction-value');
+
+        // Counters
+        const episodeCounter = document.getElementById('episode-counter');
+        const rewardCounter = document.getElementById('reward-counter');
+        const stepsCounter = document.getElementById('steps-counter');
+        const allParamsDisplay = document.getElementById('all-params');
+
+        // Buttons
+        const startButton = document.getElementById('start-button');
+        const resetButton = document.getElementById('reset-button');
+        const viewButton = document.getElementById('view-button');
+
+        // Update input values
+        learningRateSlider.addEventListener('input', () => {
+            ppoParams.learningRate = parseFloat(learningRateSlider.value);
+            learningRateValue.textContent = ppoParams.learningRate.toFixed(5);
+            updateAllParamsDisplay();
+        });
+
+        discountFactorSlider.addEventListener('input', () => {
+            ppoParams.discountFactor = parseFloat(discountFactorSlider.value);
+            discountFactorValue.textContent = ppoParams.discountFactor.toFixed(3);
+            updateAllParamsDisplay();
+        });
+
+        batchSizeSlider.addEventListener('input', () => {
+            ppoParams.batchSize = parseInt(batchSizeSlider.value);
+            batchSizeValue.textContent = ppoParams.batchSize;
+            updateAllParamsDisplay();
+        });
+        
+        clipRatioSlider.addEventListener('input', () => {
+            ppoParams.clipRatio = parseFloat(clipRatioSlider.value);
+            clipRatioValue.textContent = ppoParams.clipRatio.toFixed(2);
+            updateAllParamsDisplay();
+        });
+        
+        epochsSlider.addEventListener('input', () => {
+            ppoParams.epochs = parseInt(epochsSlider.value);
+            epochsValue.textContent = ppoParams.epochs;
+            updateAllParamsDisplay();
+        });
+        
+        entropyCoefSlider.addEventListener('input', () => {
+            ppoParams.entropyCoef = parseFloat(entropyCoefSlider.value);
+            entropyCoefValue.textContent = ppoParams.entropyCoef.toFixed(3);
+            updateAllParamsDisplay();
+        });
+        
+        valueCoefSlider.addEventListener('input', () => {
+            ppoParams.valueCoef = parseFloat(valueCoefSlider.value);
+            valueCoefValue.textContent = ppoParams.valueCoef.toFixed(2);
+            updateAllParamsDisplay();
+        });
+
+        gravitySlider.addEventListener('input', () => {
+            envParams.gravity = parseFloat(gravitySlider.value);
+            gravityValue.textContent = envParams.gravity.toFixed(1);
+            if (world) {
+                world.gravity.set(0, -envParams.gravity, 0);
+            }
+            updateAllParamsDisplay();
+        });
+
+        jointStrengthSlider.addEventListener('input', () => {
+            envParams.jointStrength = parseInt(jointStrengthSlider.value);
+            jointStrengthValue.textContent = envParams.jointStrength;
+            updateJointStrength();
+            updateAllParamsDisplay();
+        });
+        
+        simSpeedSlider.addEventListener('input', () => {
+            envParams.simSpeed = parseFloat(simSpeedSlider.value);
+            simSpeedValue.textContent = envParams.simSpeed.toFixed(1);
+            updateAllParamsDisplay();
+        });
+        
+        groundFrictionSlider.addEventListener('input', () => {
+            envParams.groundFriction = parseFloat(groundFrictionSlider.value);
+            groundFrictionValue.textContent = envParams.groundFriction.toFixed(2);
+            updateGroundFriction();
+            updateAllParamsDisplay();
+        });
+
+        // Button handlers
+        startButton.addEventListener('click', () => {
+            paused = !paused;
+            if (paused) {
+                startButton.textContent = 'Start Training';
+            } else {
+                startButton.textContent = 'Pause Training';
+            }
+        });
+
+        resetButton.addEventListener('click', () => {
+            resetSimulation();
+        });
+
+        viewButton.addEventListener('click', () => {
+            viewMode = (viewMode + 1) % 3;
+            updateCameraView();
+        });
+        
+        // Function to update the display of all parameters
+        function updateAllParamsDisplay() {
+            // Clear the container
+            allParamsDisplay.innerHTML = '';
+            
+            // Add PPO params
+            const ppoParamsList = document.createElement('div');
+            ppoParamsList.innerHTML = '<div class="font-bold text-primary">PPO Parameters:</div>';
+            
+            for (const [key, value] of Object.entries(ppoParams)) {
+                const paramItem = document.createElement('div');
+                paramItem.textContent = `${key}: ${typeof value === 'number' ? value.toString().includes('.') ? value.toFixed(5) : value : value}`;
+                ppoParamsList.appendChild(paramItem);
+            }
+            
+            // Add Environment params
+            const envParamsList = document.createElement('div');
+            envParamsList.classList.add('mt-2');
+            envParamsList.innerHTML = '<div class="font-bold text-primary">Environment Parameters:</div>';
+            
+            for (const [key, value] of Object.entries(envParams)) {
+                const paramItem = document.createElement('div');
+                paramItem.textContent = `${key}: ${typeof value === 'number' ? value.toString().includes('.') ? value.toFixed(5) : value : value}`;
+                envParamsList.appendChild(paramItem);
+            }
+            
+            allParamsDisplay.appendChild(ppoParamsList);
+            allParamsDisplay.appendChild(envParamsList);
+        }
+        
+        function updateGroundFriction() {
+            // In a real implementation, we would update the ground material here
+            if (world && world.contacts) {
+                for (let i = 0; i < world.contacts.length; i++) {
+                    const contact = world.contacts[i];
+                    if (contact.bi.material && contact.bi.material.friction) {
+                        contact.bi.material.friction = envParams.groundFriction;
+                    }
+                    if (contact.bj.material && contact.bj.material.friction) {
+                        contact.bj.material.friction = envParams.groundFriction;
+                    }
+                }
+            }
+        }
+
+        // Initialize Three.js scene and Cannon.js physics
+        init();
+        animate();
+        updateAllParamsDisplay();
+
+        function init() {
+            // Set up the THREE.js scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB); // Sky blue background
+
+            // Create a camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 3, 5);
+            camera.lookAt(0, 1, 0);
+
+            // Set up the renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.shadowMap.enabled = true;
+            renderer.setPixelRatio(window.devicePixelRatio);
+            
+            const container = document.getElementById('simulation-container');
+            container.appendChild(renderer.domElement);
+            updateRendererSize();
+
+            // Create lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 20, 15);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.left = -15;
+            directionalLight.shadow.camera.right = 15;
+            directionalLight.shadow.camera.top = 15;
+            directionalLight.shadow.camera.bottom = -15;
+            scene.add(directionalLight);
+
+            // Set up the physics world
+            world = new CANNON.World();
+            world.gravity.set(0, -envParams.gravity, 0);
+
+            // Create the ground
+            createGround();
+            
+            // Create the biped character
+            createBiped();
+
+            // Initialize reward chart
+            initRewardChart();
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                updateRendererSize();
+            });
+        }
+
+        function updateRendererSize() {
+            const container = document.getElementById('simulation-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            renderer.setSize(width, height);
+            if (camera) {
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+        }
+
+        function createGround() {
+            // Cannon.js ground
+            const groundShape = new CANNON.Plane();
+            const groundMaterial = new CANNON.Material({ friction: envParams.groundFriction });
+            const groundBody = new CANNON.Body({
+                mass: 0,
+                material: groundMaterial
+            });
+            groundBody.addShape(groundShape);
+            groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+            world.addBody(groundBody);
+
+            // Three.js ground
+            const groundGeo = new THREE.PlaneGeometry(100, 100);
+            const groundMat = new THREE.MeshStandardMaterial({ 
+                color: 0x90EE90,
+                roughness: 0.8,
+                metalness: 0.2
+            });
+            ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Add grid for reference
+            const grid = new THREE.GridHelper(100, 100, 0x000000, 0x333333);
+            grid.position.y = 0.01;
+            scene.add(grid);
+        }
+
+        function createBiped() {
+            // Reset arrays
+            bipedBodies = [];
+            
+            // Create torso
+            const torsoSize = { x: 0.3, y: 0.6, z: 0.2 };
+            const torsoPos = { x: 0, y: 1.5, z: 0 };
+            
+            const torsoBody = new CANNON.Body({
+                mass: 10,
+                position: new CANNON.Vec3(torsoPos.x, torsoPos.y, torsoPos.z),
+                shape: new CANNON.Box(new CANNON.Vec3(torsoSize.x/2, torsoSize.y/2, torsoSize.z/2))
+            });
+            world.addBody(torsoBody);
+            bipedBodies.push(torsoBody);
+            
+            const torsoGeo = new THREE.BoxGeometry(torsoSize.x, torsoSize.y, torsoSize.z);
+            const torsoMat = new THREE.MeshStandardMaterial({ color: 0x2196F3 });
+            const torsoMesh = new THREE.Mesh(torsoGeo, torsoMat);
+            torsoMesh.castShadow = true;
+            scene.add(torsoMesh);
+            torsoBody.threeMesh = torsoMesh;
+            
+            // Create head
+            const headSize = 0.2;
+            const headPos = { x: 0, y: torsoPos.y + torsoSize.y/2 + headSize/2, z: 0 };
+            
+            const headBody = new CANNON.Body({
+                mass: 2,
+                position: new CANNON.Vec3(headPos.x, headPos.y, headPos.z),
+                shape: new CANNON.Sphere(headSize)
+            });
+            world.addBody(headBody);
+            bipedBodies.push(headBody);
+            
+            const headGeo = new THREE.SphereGeometry(headSize, 16, 16);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xFFB74D });
+            const headMesh = new THREE.Mesh(headGeo, headMat);
+            headMesh.castShadow = true;
+            scene.add(headMesh);
+            headBody.threeMesh = headMesh;
+            
+            // Connect head to torso
+            const neckJoint = new CANNON.PointToPointConstraint(
+                torsoBody, new CANNON.Vec3(0, torsoSize.y/2, 0),
+                headBody, new CANNON.Vec3(0, -headSize, 0)
+            );
+            world.addConstraint(neckJoint);
+            
+            // Create legs
+            const legLength = 0.6;
+            const legRadius = 0.1;
+            
+            // Create left thigh
+            const leftThighPos = { 
+                x: -torsoSize.x/2, 
+                y: torsoPos.y - torsoSize.y/2, 
+                z: 0 
+            };
+            const leftThighBody = createLimb(
+                leftThighPos, legRadius, legLength, 0xE91E63
+            );
+            
+            // Connect left thigh to torso
+            const leftHipJoint = new CANNON.ConeTwistConstraint(
+                torsoBody, 
+                leftThighBody, 
+                {
+                    pivotA: new CANNON.Vec3(-torsoSize.x/2, -torsoSize.y/2, 0),
+                    pivotB: new CANNON.Vec3(0, legLength/2, 0),
+                    axisA: new CANNON.Vec3(0, -1, 0),
+                    axisB: new CANNON.Vec3(0, 1, 0),
+                    angle: Math.PI / 4,
+                    twistAngle: Math.PI / 4
+                }
+            );
+            world.addConstraint(leftHipJoint);
+            
+            // Create left calf
+            const leftCalfPos = { 
+                x: leftThighPos.x, 
+                y: leftThighPos.y - legLength, 
+                z: 0 
+            };
+            const leftCalfBody = createLimb(
+                leftCalfPos, legRadius, legLength, 0xE91E63
+            );
+            
+            // Connect left calf to thigh
+            const leftKneeJoint = new CANNON.ConeTwistConstraint(
+                leftThighBody, 
+                leftCalfBody, 
+                {
+                    pivotA: new CANNON.Vec3(0, -legLength/2, 0),
+                    pivotB: new CANNON.Vec3(0, legLength/2, 0),
+                    axisA: new CANNON.Vec3(0, -1, 0),
+                    axisB: new CANNON.Vec3(0, 1, 0),
+                    angle: Math.PI / 8,
+                    twistAngle: 0
+                }
+            );
+            world.addConstraint(leftKneeJoint);
+            
+            // Create right thigh
+            const rightThighPos = { 
+                x: torsoSize.x/2, 
+                y: torsoPos.y - torsoSize.y/2, 
+                z: 0 
+            };
+            const rightThighBody = createLimb(
+                rightThighPos, legRadius, legLength, 0x4CAF50
+            );
+            
+            // Connect right thigh to torso
+            const rightHipJoint = new CANNON.ConeTwistConstraint(
+                torsoBody, 
+                rightThighBody, 
+                {
+                    pivotA: new CANNON.Vec3(torsoSize.x/2, -torsoSize.y/2, 0),
+                    pivotB: new CANNON.Vec3(0, legLength/2, 0),
+                    axisA: new CANNON.Vec3(0, -1, 0),
+                    axisB: new CANNON.Vec3(0, 1, 0),
+                    angle: Math.PI / 4,
+                    twistAngle: Math.PI / 4
+                }
+            );
+            world.addConstraint(rightHipJoint);
+            
+            // Create right calf
+            const rightCalfPos = { 
+                x: rightThighPos.x, 
+                y: rightThighPos.y - legLength, 
+                z: 0 
+            };
+            const rightCalfBody = createLimb(
+                rightCalfPos, legRadius, legLength, 0x4CAF50
+            );
+            
+            // Connect right calf to thigh
+            const rightKneeJoint = new CANNON.ConeTwistConstraint(
+                rightThighBody, 
+                rightCalfBody, 
+                {
+                    pivotA: new CANNON.Vec3(0, -legLength/2, 0),
+                    pivotB: new CANNON.Vec3(0, legLength/2, 0),
+                    axisA: new CANNON.Vec3(0, -1, 0),
+                    axisB: new CANNON.Vec3(0, 1, 0),
+                    angle: Math.PI / 8,
+                    twistAngle: 0
+                }
+            );
+            world.addConstraint(rightKneeJoint);
+            
+            // Add feet
+            const footSize = { x: 0.15, y: 0.05, z: 0.25 };
+            
+            // Left foot
+            const leftFootPos = { 
+                x: leftCalfPos.x, 
+                y: leftCalfPos.y - legLength/2 - footSize.y/2, 
+                z: 0.05 
+            };
+            
+            const leftFootBody = new CANNON.Body({
+                mass: 1,
+                position: new CANNON.Vec3(leftFootPos.x, leftFootPos.y, leftFootPos.z),
+                shape: new CANNON.Box(new CANNON.Vec3(footSize.x/2, footSize.y/2, footSize.z/2))
+            });
+            world.addBody(leftFootBody);
+            bipedBodies.push(leftFootBody);
+            
+            const leftFootGeo = new THREE.BoxGeometry(footSize.x, footSize.y, footSize.z);
+            const leftFootMat = new THREE.MeshStandardMaterial({ color: 0xE91E63 });
+            const leftFootMesh = new THREE.Mesh(leftFootGeo, leftFootMat);
+            leftFootMesh.castShadow = true;
+            scene.add(leftFootMesh);
+            leftFootBody.threeMesh = leftFootMesh;
+            
+            // Connect left foot to calf
+            const leftAnkleJoint = new CANNON.ConeTwistConstraint(
+                leftCalfBody, 
+                leftFootBody, 
+                {
+                    pivotA: new CANNON.Vec3(0, -legLength/2, 0),
+                    pivotB: new CANNON.Vec3(0, 0, -footSize.z/4),
+                    axisA: new CANNON.Vec3(0, -1, 0),
+                    axisB: new CANNON.Vec3(0, -1, 0),
+                    angle: Math.PI / 8,
+                    twistAngle: Math.PI / 8
+                }
+            );
+            world.addConstraint(leftAnkleJoint);
+            
+            // Right foot
+            const rightFootPos = { 
+                x: rightCalfPos.x, 
+                y: rightCalfPos.y - legLength/2 - footSize.y/2, 
+                z: 0.05 
+            };
+            
+            const rightFootBody = new CANNON.Body({
+                mass: 1,
+                position: new CANNON.Vec3(rightFootPos.x, rightFootPos.y, rightFootPos.z),
+                shape: new CANNON.Box(new CANNON.Vec3(footSize.x/2, footSize.y/2, footSize.z/2))
+            });
+            world.addBody(rightFootBody);
+            bipedBodies.push(rightFootBody);
+            
+            const rightFootGeo = new THREE.BoxGeometry(footSize.x, footSize.y, footSize.z);
+            const rightFootMat = new THREE.MeshStandardMaterial({ color: 0x4CAF50 });
+            const rightFootMesh = new THREE.Mesh(rightFootGeo, rightFootMat);
+            rightFootMesh.castShadow = true;
+            scene.add(rightFootMesh);
+            rightFootBody.threeMesh = rightFootMesh;
+            
+            // Connect right foot to calf
+            const rightAnkleJoint = new CANNON.ConeTwistConstraint(
+                rightCalfBody, 
+                rightFootBody, 
+                {
+                    pivotA: new CANNON.Vec3(0, -legLength/2, 0),
+                    pivotB: new CANNON.Vec3(0, 0, -footSize.z/4),
+                    axisA: new CANNON.Vec3(0, -1, 0),
+                    axisB: new CANNON.Vec3(0, -1, 0),
+                    angle: Math.PI / 8,
+                    twistAngle: Math.PI / 8
+                }
+            );
+            world.addConstraint(rightAnkleJoint);
+            
+            // Store torso reference
+            biped = torsoBody;
+            
+            // Store initial position
+            lastPosition = { x: torsoBody.position.x, z: torsoBody.position.z };
+        }
+        
+        function createLimb(position, radius, length, color) {
+            // Create physical body
+            const body = new CANNON.Body({
+                mass: 1,
+                position: new CANNON.Vec3(position.x, position.y - length/2, position.z)
+            });
+            
+            // Add cylindrical shape
+            const shape = new CANNON.Cylinder(radius, radius, length, 8);
+            // Rotate the cylinder so it's vertical
+            const quat = new CANNON.Quaternion();
+            quat.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
+            body.addShape(shape, new CANNON.Vec3(), quat);
+            
+            world.addBody(body);
+            bipedBodies.push(body);
+            
+            // Create visual representation
+            const geo = new THREE.CylinderGeometry(radius, radius, length, 8);
+            const mat = new THREE.MeshStandardMaterial({ color: color });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.rotation.x = Math.PI / 2;
+            mesh.castShadow = true;
+            scene.add(mesh);
+            
+            // Link the mesh to the body
+            body.threeMesh = mesh;
+            
+            return body;
+        }
+
+        function updateJointStrength() {
+            // In a real implementation, we would update joint motors here
+            // For simplicity in this demo, we're just changing a parameter
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (!paused) {
+                // Apply simulation speed
+                const timeStep = envParams.timeStep * envParams.simSpeed;
+                
+                // Simulate physics
+                world.step(timeStep, envParams.substeps);
+                currentSteps++;
+                stepsCounter.textContent = currentSteps;
+                
+                // Run PPO actions
+                if (currentSteps % 5 === 0) { // Only apply actions every 5 frames
+                    applyPPOActions();
+                }
+                
+                // Calculate reward
+                calculateReward();
+            }
+            
+            // Update visuals based on physics
+            updateVisuals();
+            
+            // Update camera position based on biped position
+            updateCameraView();
+            
+            // Render scene
+            renderer.render(scene, camera);
+        }
+
+        function updateVisuals() {
+            bipedBodies.forEach(body => {
+                if (body.threeMesh) {
+                    body.threeMesh.position.copy(body.position);
+                    body.threeMesh.quaternion.copy(body.quaternion);
+                }
+            });
+        }
+
+        function updateCameraView() {
+            if (!biped) return;
+            
+            const pos = biped.position;
+            
+            switch(viewMode) {
+                case 0: // Follow view
+                    camera.position.set(pos.x - 3, pos.y + 2, pos.z + 3);
+                    camera.lookAt(pos.x, pos.y, pos.z);
+                    break;
+                case 1: // Side view
+                    camera.position.set(pos.x - 5, pos.y + 1, pos.z);
+                    camera.lookAt(pos.x, pos.y, pos.z);
+                    break;
+                case 2: // Top view
+                    camera.position.set(pos.x, pos.y + 8, pos.z);
+                    camera.lookAt(pos.x, pos.y, pos.z);
+                    break;
+            }
+        }
+
+        function applyPPOActions() {
+            // This simulates applying actions from the PPO policy
+            // In a real implementation, this would use TensorFlow.js to evaluate the policy network
+            
+            if (!biped) return;
+            
+            // Apply more controlled forces for bipedal walking
+            // We'll focus on leg parts only, keeping the upper body more stable
+            
+            // Find leg bodies (thighs, calves, feet)
+            const legBodies = bipedBodies.filter((body, index) => 
+                // Skip torso (0) and head (1)
+                index > 1
+            );
+            
+            // Apply a small forward bias to encourage forward movement
+            biped.applyForce(
+                new CANNON.Vec3(envParams.jointStrength * 0.2, 0, 0),
+                new CANNON.Vec3(0, 0, 0)
+            );
+            
+            // Apply controlled forces to leg parts
+            legBodies.forEach(body => {
+                // Use a smaller percentage of the joint strength
+                const strength = envParams.jointStrength * 0.1;
+                
+                // More horizontal movement, very limited vertical component
+                const forceX = (Math.random() - 0.3) * strength; // Bias toward forward motion
+                const forceY = (Math.random() - 0.5) * strength * 0.2; // Very small vertical component
+                const forceZ = (Math.random() - 0.5) * strength * 0.4; // Limited sideways motion
+                
+                // Apply force at the center of mass
+                body.applyForce(
+                    new CANNON.Vec3(forceX, forceY, forceZ),
+                    new CANNON.Vec3(0, 0, 0)
+                );
+            });
+            
+            // Add a small stabilizing torque to keep the torso upright
+            // Use a different approach to determine tilt - get the "up" vector of the torso
+            const upVector = new CANNON.Vec3(0, 1, 0); // World up vector
+            const bodyUpVector = new CANNON.Vec3(0, 1, 0); // Initial body up vector
+            
+            // Transform the body up vector by the body's quaternion
+            biped.quaternion.vmult(bodyUpVector, bodyUpVector);
+            
+            // Calculate torque to align body up with world up
+            const stabilizingTorque = new CANNON.Vec3();
+            upVector.cross(bodyUpVector, stabilizingTorque);
+            stabilizingTorque.scale(envParams.jointStrength * 0.5, stabilizingTorque);
+            
+            biped.applyTorque(stabilizingTorque);
+        }
+
+        function calculateReward() {
+            if (!biped) return;
+            
+            // Calculate distance moved forward (x-axis)
+            const currentPos = { x: biped.position.x, z: biped.position.z };
+            const distanceMoved = currentPos.x - lastPosition.x;
+            
+            // Reward for moving forward (x-axis direction)
+            let reward = distanceMoved * 10;
+            
+            // Penalty for sideways movement
+            const sidewaysMovement = Math.abs(currentPos.z - lastPosition.z);
+            reward -= sidewaysMovement * 5;
+            
+            // Penalty for falling
+            if (biped.position.y < 0.5) {
+                reward -= 10;
+                resetSimulation();
+            }
+            
+            // Update last position
+            lastPosition = currentPos;
+            
+            // Add to cumulative reward
+            currentReward += reward;
+            rewardCounter.textContent = currentReward.toFixed(2);
+            
+            // Check if episode should end
+            if (currentSteps > 1000 || biped.position.y < 0.2) {
+                endEpisode();
+            }
+        }
+
+        function endEpisode() {
+            // Record the episode reward
+            rewardHistory.push(currentReward);
+            updateRewardChart();
+            
+            // Increment episode counter
+            currentEpisode++;
+            episodeCounter.textContent = currentEpisode;
+            
+            // Reset simulation for next episode
+            resetSimulation();
+        }
+
+        function resetSimulation() {
+            // Record final reward of current episode
+            if (currentSteps > 0) {
+                rewardHistory.push(currentReward);
+                updateRewardChart();
+                
+                currentEpisode++;
+                episodeCounter.textContent = currentEpisode;
+            }
+            
+            // Remove existing biped
+            if (biped) {
+                bipedBodies.forEach(body => {
+                    if (body.threeMesh) {
+                        scene.remove(body.threeMesh);
+                    }
+                    world.removeBody(body);
+                });
+                
+                bipedBodies = [];
+                biped = null;
+            }
+            
+            // Create new biped
+            createBiped();
+            
+            // Reset counters
+            currentReward = 0;
+            currentSteps = 0;
+            rewardCounter.textContent = currentReward.toFixed(2);
+            stepsCounter.textContent = currentSteps;
+        }
+
+        function initRewardChart() {
+            // Simplified chart representation
+            // In a real implementation, we'd use a proper charting library
+            const chartCanvas = document.getElementById('reward-chart');
+            const ctx = chartCanvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+            
+            // Draw axes
+            ctx.strokeStyle = document.documentElement.classList.contains('dark') ? '#aaa' : '#333';
+            ctx.beginPath();
+            ctx.moveTo(10, 10);
+            ctx.lineTo(10, chartCanvas.height - 10);
+            ctx.lineTo(chartCanvas.width - 10, chartCanvas.height - 10);
+            ctx.stroke();
+            
+            // Label axes
+            ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#aaa' : '#333';
+            ctx.font = '8px Arial';
+            ctx.fillText('Reward', 5, 5);
+            ctx.fillText('Episodes', chartCanvas.width - 40, chartCanvas.height - 2);
+        }
+
+        function updateRewardChart() {
+            const chartCanvas = document.getElementById('reward-chart');
+            const ctx = chartCanvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+            
+            // Determine min and max reward for scaling
+            let minReward = Math.min(0, ...rewardHistory);
+            let maxReward = Math.max(1, ...rewardHistory);
+            
+            // Add padding
+            minReward = minReward - Math.abs(minReward * 0.1);
+            maxReward = maxReward + Math.abs(maxReward * 0.1);
+            
+            // Draw axes
+            ctx.strokeStyle = document.documentElement.classList.contains('dark') ? '#aaa' : '#333';
+            ctx.beginPath();
+            ctx.moveTo(30, 10);
+            ctx.lineTo(30, chartCanvas.height - 20);
+            ctx.lineTo(chartCanvas.width - 10, chartCanvas.height - 20);
+            ctx.stroke();
+            
+            // Label axes
+            ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#aaa' : '#333';
+            ctx.font = '8px Arial';
+            ctx.fillText('Reward', 5, 10);
+            ctx.fillText('Episodes', chartCanvas.width - 40, chartCanvas.height - 5);
+            
+            // Draw reward line
+            if (rewardHistory.length > 1) {
+                ctx.strokeStyle = '#5D5CDE';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                for (let i = 0; i < rewardHistory.length; i++) {
+                    const x = 30 + (i / (rewardHistory.length - 1)) * (chartCanvas.width - 40);
+                    const normalizedReward = (rewardHistory[i] - minReward) / (maxReward - minReward);
+                    const y = chartCanvas.height - 20 - normalizedReward * (chartCanvas.height - 30);
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                ctx.stroke();
+            }
+            
+            // Show min/max values
+            ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#aaa' : '#333';
+            ctx.font = '8px Arial';
+            ctx.fillText(maxReward.toFixed(1), 5, 20);
+            ctx.fillText(minReward.toFixed(1), 5, chartCanvas.height - 25);
+        }
+    </script>
+
+
+</body></html>

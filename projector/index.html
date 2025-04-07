@@ -1,0 +1,547 @@
+<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Physics Simulator</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cannon@0.6.2/build/cannon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/fflate.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="js/3d.js"></script>
+    <script src="js/control.js"></script>
+    <script src="js/connections.js"></script>
+    <script src="js/shape.js"></script>
+    <script src="js/window.js"></script>
+    <script src="js/fbxphysics.js"></script>
+    <script src="js/newsave.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200">
+    <div class="flex flex-col min-h-screen">
+        <header class="p-4 bg-primary text-white shadow-md">
+            <h1 class="text-xl font-bold">3D Physics Simulator</h1>
+        </header>
+        
+        <main class="flex-grow flex flex-col md:flex-row">
+            <!-- 3D Canvas Container -->
+            <div id="canvas-container" class="flex-grow relative h-[30vh] md:h-auto">
+                <!-- Canvas will be added here -->
+                
+                <!-- Instructions Overlay -->
+                <div class="absolute top-2 left-2 bg-black bg-opacity-50 text-white p-2 rounded text-sm pointer-events-none">
+                    <p class="font-bold mb-1">Movement Controls:</p>
+                    <p>Arrows: Move in X-Z plane</p>
+                    <p>W/S: Move up/down (Y axis)</p>
+                    <p class="font-bold mt-2 mb-1">Rotation Controls:</p>
+                    <p>Q/E: Rotate X-axis</p>
+                    <p>A/D: Rotate Y-axis</p>
+                    <p>Z/C: Rotate Z-axis</p>
+                    <p>Shift+Click: Multi-select</p>
+                </div>
+                
+                <!-- Mobile controls -->
+                <div id="mobile-controls" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 hidden">
+                    <div class="grid grid-cols-3 gap-1">
+                        <button class="mobile-btn bg-primary opacity-70 hover:opacity-100 text-white w-12 h-12 rounded-lg" data-dir="up">↑</button>
+                        <button class="mobile-btn bg-primary opacity-70 hover:opacity-100 text-white w-12 h-12 rounded-lg" data-dir="y-up">⬆️</button>
+                        <div></div>
+                        <button class="mobile-btn bg-primary opacity-70 hover:opacity-100 text-white w-12 h-12 rounded-lg" data-dir="left">←</button>
+                        <button class="mobile-btn bg-primary opacity-70 hover:opacity-100 text-white w-12 h-12 rounded-lg" data-dir="y-down">⬇️</button>
+                        <button class="mobile-btn bg-primary opacity-70 hover:opacity-100 text-white w-12 h-12 rounded-lg" data-dir="right">→</button>
+                        <div></div>
+                        <button class="mobile-btn bg-primary opacity-70 hover:opacity-100 text-white w-12 h-12 rounded-lg" data-dir="down">↓</button>
+                        <div></div>
+                    </div>
+                </div>
+                
+                <!-- Mobile rotation controls -->
+                <div id="mobile-rotation-controls" class="absolute bottom-4 right-2 hidden">
+                    <div class="grid grid-cols-3 gap-1 mb-1">
+                        <button class="mobile-rotate-btn bg-blue-600 opacity-70 hover:opacity-100 text-white w-10 h-10 rounded-lg" data-axis="x" data-dir="-1">X-</button>
+                        <div></div>
+                        <button class="mobile-rotate-btn bg-blue-600 opacity-70 hover:opacity-100 text-white w-10 h-10 rounded-lg" data-axis="x" data-dir="1">X+</button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 mb-1">
+                        <button class="mobile-rotate-btn bg-green-600 opacity-70 hover:opacity-100 text-white w-10 h-10 rounded-lg" data-axis="y" data-dir="-1">Y-</button>
+                        <div></div>
+                        <button class="mobile-rotate-btn bg-green-600 opacity-70 hover:opacity-100 text-white w-10 h-10 rounded-lg" data-axis="y" data-dir="1">Y+</button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1">
+                        <button class="mobile-rotate-btn bg-red-600 opacity-70 hover:opacity-100 text-white w-10 h-10 rounded-lg" data-axis="z" data-dir="-1">Z-</button>
+                        <div></div>
+                        <button class="mobile-rotate-btn bg-red-600 opacity-70 hover:opacity-100 text-white w-10 h-10 rounded-lg" data-axis="z" data-dir="1">Z+</button>
+                    </div>
+                </div>
+                
+                <!-- Floating Motor Control Panel -->
+                <div id="motor-remote-panel" class="hidden absolute top-14 right-4 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg w-64 z-20 cursor-move">
+                    <div class="flex justify-between items-center mb-2 cursor-pointer" id="motor-panel-header">
+                        <h3 class="font-bold text-primary">Motor Controls</h3>
+                        <button id="close-motor-panel" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">×</button>
+                    </div>
+                    <div id="motor-remote-controls" class="max-h-60 overflow-y-auto">
+                        <!-- Motor controls will be added here -->
+                        <div class="text-center text-gray-500 dark:text-gray-400 py-2">No motors available</div>
+                    </div>
+                    <div class="mt-2 text-right">
+                        <button id="show-all-motors-btn" class="text-xs text-primary hover:underline">Show All Motors</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Controls Panel -->
+            <div class="w-full md:w-80 p-4 bg-gray-100 dark:bg-gray-800 overflow-y-auto">
+                <h2 class="text-lg font-semibold mb-4">Controls</h2>
+                
+                <!-- Shape Creation -->
+                <div class="mb-6 panel-section">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Add Shape</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <button class="shape-btn p-2 bg-primary text-white rounded hover:bg-opacity-90" data-shape="box">Cube</button>
+                            <button class="shape-btn p-2 bg-primary text-white rounded hover:bg-opacity-90" data-shape="sphere">Sphere</button>
+                            <button class="shape-btn p-2 bg-primary text-white rounded hover:bg-opacity-90" data-shape="cylinder">Cylinder</button>
+                            <button class="shape-btn p-2 bg-primary text-white rounded hover:bg-opacity-90" data-shape="cone">Cone</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="shape-btn p-2 bg-primary text-white rounded hover:bg-opacity-90" data-shape="torus">Torus</button>
+                            <button class="shape-btn p-2 bg-primary text-white rounded hover:bg-opacity-90" data-shape="car">Car</button>
+                            <button class="shape-btn p-2 bg-primary text-white rounded hover:bg-opacity-90" data-shape="wheel">Wheel</button>
+                            <button class="shape-btn p-2 bg-primary text-white rounded hover:bg-opacity-90" data-shape="dual-motor">Dual Motor</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Object Management -->
+                <div class="mb-6 panel-section">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Object Actions</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <button id="fix-btn" class="p-2 bg-purple-600 text-white rounded hover:bg-opacity-90">Fix in Place</button>
+                            <button id="unfix-btn" class="p-2 bg-indigo-600 text-white rounded hover:bg-opacity-90">Unfix</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stick and Motor Controls -->
+                <div class="mb-6 panel-section connection">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Connection Tools</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <button id="stick-btn" class="p-2 bg-green-600 text-white rounded hover:bg-opacity-90">Create Stick</button>
+                            <button id="motor-btn" class="p-2 bg-blue-600 text-white rounded hover:bg-opacity-90">Create Motor</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <button id="rigid-stick-btn" class="p-2 bg-green-800 text-white rounded hover:bg-opacity-90">Rigid Stick</button>
+                            <button id="rigid-motor-btn" class="p-2 bg-blue-800 text-white rounded hover:bg-opacity-90">Rigid Motor</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <button id="glue-btn" class="p-2 bg-yellow-600 text-white rounded hover:bg-opacity-90">Create Glue</button>
+                            <button id="dual-motor-attach-btn" class="p-2 bg-pink-600 text-white rounded hover:bg-opacity-90">Attach Motor</button>
+                        </div>
+                        <div>
+                            <button id="delete-connections-btn" class="p-2 w-full bg-red-600 text-white rounded hover:bg-opacity-90">Delete Connections</button>
+                        </div>
+                        
+                        <!-- Connection stiffness slider -->
+                        <div class="mt-2" id="connection-stiffness-control">
+                            <label for="connection-stiffness" class="text-sm block mb-1">Connection Stiffness:</label>
+                            <div class="flex items-center">
+                                <span class="text-xs mr-2">Flexible</span>
+                                <input type="range" id="connection-stiffness" min="0.1" max="100" step="0.1" value="50" class="flex-grow">
+                                <span class="text-xs ml-2">Rigid</span>
+                            </div>
+                            <div class="text-center text-xs" id="stiffness-value">50</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FBX Model Import -->
+                <div class="mb-6 panel-section">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Import FBX Model</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <input type="file" id="fbx-input" accept=".fbx" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-opacity-90">
+                        <div id="fbx-status" class="mt-1 text-sm text-gray-500 dark:text-gray-400"></div>
+                    </div>
+                </div>
+                
+                <!-- Export/Import Scene -->
+                <div class="mb-6 panel-section disabletemp">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Scene Management</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="export-btn" class="p-2 bg-primary text-white rounded hover:bg-opacity-90">Export Scene</button>
+                            <button id="import-btn" class="p-2 bg-primary text-white rounded hover:bg-opacity-90">Import Scene</button>
+                            <input type="file" id="import-file" accept=".json" class="hidden">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Physics Controls -->
+                <div class="mb-6 panel-section">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Simulation</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <button id="start-btn" class="p-2 bg-green-600 text-white rounded hover:bg-opacity-90">Start</button>
+                            <button id="pause-btn" class="p-2 bg-yellow-600 text-white rounded hover:bg-opacity-90">Pause</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="reset-btn" class="p-2 bg-red-600 text-white rounded hover:bg-opacity-90">Reset All</button>
+                            <button id="reset-pos-btn" class="p-2 bg-blue-600 text-white rounded hover:bg-opacity-90">Reset Positions</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Motor Speed Controls (hidden by default) -->
+                <div id="motor-speed-controls" class="mb-6 panel-section hidden">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Motor Controls</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <div class="mb-3">
+                            <label for="motor-speed-slider" class="block mb-1">Speed:</label>
+                            <input type="range" id="motor-speed-slider" min="-10" max="10" step="0.1" value="0" class="w-full">
+                            <div class="flex justify-between">
+                                <span id="motor-speed-value">0 rad/s</span>
+                                <select id="motor-axis-select" class="text-sm bg-white dark:bg-gray-700 border rounded">
+                                    <option value="x">X-axis</option>
+                                    <option value="y" selected="">Y-axis</option>
+                                    <option value="z">Z-axis</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Add motor force control -->
+                        <div class="mb-3">
+                            <label for="motor-force-slider" class="block mb-1">Maximum Force:</label>
+                            <input type="range" id="motor-force-slider" min="1" max="100" step="1" value="10" class="w-full">
+                            <div class="text-xs text-right" id="motor-force-value">10 N·m</div>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <button id="motor-ccw-btn" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-opacity-90">⟲ CCW</button>
+                            <button id="motor-stop-btn" class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-opacity-90">■ Stop</button>
+                            <button id="motor-cw-btn" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-opacity-90">⟳ CW</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dual Motor Controls (hidden by default) -->
+                <div id="dual-motor-controls" class="mb-6 panel-section hidden">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Dual Motor Controls</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <div id="dual-motor-info" class="text-sm mb-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            Select a dual motor to control
+                        </div>
+                        <div class="mb-3">
+                            <label for="dual-motor-speed-slider" class="block mb-1">Speed:</label>
+                            <input type="range" id="dual-motor-speed-slider" min="-10" max="10" step="0.1" value="0" class="w-full">
+                            <div class="text-xs text-right" id="dual-motor-speed-value">0 rad/s</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="dual-motor-force-slider" class="block mb-1">Maximum Force:</label>
+                            <input type="range" id="dual-motor-force-slider" min="1" max="100" step="1" value="20" class="w-full">
+                            <div class="text-xs text-right" id="dual-motor-force-value">20 N·m</div>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <button id="dual-motor-ccw-btn" class="px-3 py-1 bg-pink-600 text-white text-sm rounded hover:bg-opacity-90">⟲ CCW</button>
+                            <button id="dual-motor-stop-btn" class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-opacity-90">■ Stop</button>
+                            <button id="dual-motor-cw-btn" class="px-3 py-1 bg-pink-600 text-white text-sm rounded hover:bg-opacity-90">⟳ CW</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Object Properties -->
+                <div class="mb-6 panel-section">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Object Properties</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <!-- Position Coordinates -->
+                        <div class="mb-3">
+                            <div class="font-medium text-sm mb-1">Position (meters):</div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label for="pos-x" class="block text-xs">X:</label>
+                                    <input type="number" id="pos-x" step="0.1" class="w-full p-1 border rounded text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                </div>
+                                <div>
+                                    <label for="pos-y" class="block text-xs">Y:</label>
+                                    <input type="number" id="pos-y" step="0.1" class="w-full p-1 border rounded text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                </div>
+                                <div>
+                                    <label for="pos-z" class="block text-xs">Z:</label>
+                                    <input type="number" id="pos-z" step="0.1" class="w-full p-1 border rounded text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                </div>
+                            </div>
+                            <button id="apply-position" class="w-full mt-2 p-1 bg-primary text-white text-sm rounded hover:bg-opacity-90">Apply Position</button>
+                        </div>
+                        
+                        <!-- Dimensions -->
+                        <div id="dimensions-control" class="mb-3">
+                            <div class="mb-2 font-medium text-sm">Dimensions (cm):</div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label for="width-input" class="block text-xs">Width:</label>
+                                    <input type="number" id="width-input" min="0.5" max="300" step="0.1" value="100" class="w-full p-1 border rounded text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                </div>
+                                <div>
+                                    <label for="height-input" class="block text-xs">Height:</label>
+                                    <input type="number" id="height-input" min="0.5" max="300" step="0.1" value="100" class="w-full p-1 border rounded text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                </div>
+                                <div>
+                                    <label for="length-input" class="block text-xs">Length:</label>
+                                    <input type="number" id="length-input" min="0.5" max="300" step="0.1" value="100" class="w-full p-1 border rounded text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                </div>
+                            </div>
+                            <button id="apply-dimensions" class="w-full mt-2 p-1 bg-primary text-white text-sm rounded hover:bg-opacity-90">Apply Dimensions</button>
+                        </div>
+                        
+                        <!-- Mass -->
+                        <div class="mb-3">
+                            <label for="mass-input" class="block mb-1">Mass (g):</label>
+                            <input type="number" id="mass-input" min="1" max="20000" step="1" value="5000" class="w-full p-2 border rounded text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        
+                        <!-- Color -->
+                        <div class="mb-3">
+                            <label for="color-picker" class="block mb-1">Color:</label>
+                            <div class="grid grid-cols-5 gap-1">
+                                <div class="color-swatch w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-white" style="background-color: #5D5CDE;" data-color="#5D5CDE"></div>
+                                <div class="color-swatch w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-white" style="background-color: #ff4136;" data-color="#ff4136"></div>
+                                <div class="color-swatch w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-white" style="background-color: #2ecc40;" data-color="#2ecc40"></div>
+                                <div class="color-swatch w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-white" style="background-color: #ff851b;" data-color="#ff851b"></div>
+                                <div class="color-swatch w-8 h-8 rounded cursor-pointer border-2 border-transparent hover:border-white" style="background-color: #b10dc9;" data-color="#b10dc9"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rotation Controls -->
+                <div class="mb-6 panel-section" id="rotation-controls">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Rotation (degrees)</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <div class="grid grid-cols-3 gap-2 mb-2">
+                            <div>
+                                <label for="rot-x" class="block text-sm">X-axis:</label>
+                                <input type="number" id="rot-x" value="0" step="5" class="w-full p-1 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            </div>
+                            <div>
+                                <label for="rot-y" class="block text-sm">Y-axis:</label>
+                                <input type="number" id="rot-y" value="0" step="5" class="w-full p-1 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            </div>
+                            <div>
+                                <label for="rot-z" class="block text-sm">Z-axis:</label>
+                                <input type="number" id="rot-z" value="0" step="5" class="w-full p-1 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            </div>
+                        </div>
+                        <button id="apply-rotation" class="w-full p-2 bg-primary text-white rounded hover:bg-opacity-90">Apply Rotation</button>
+                    </div>
+                </div>
+                
+                <!-- Gravity Controls -->
+                <div class="mb-6 panel-section">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Gravity</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <div class="mb-3">
+                            <label for="gravity-slider" class="block mb-1">Strength:</label>
+                            <input type="range" id="gravity-slider" min="0" max="20" step="0.1" value="9.82" class="w-full">
+                            <div class="text-sm text-right" id="gravity-value">9.82 m/s²</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Object List -->
+                <div class="mb-6 panel-section">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Objects (<span id="object-count">0</span>)</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <div id="object-list" class="max-h-60 overflow-y-auto bg-white dark:bg-gray-700 rounded p-2">
+                            <!-- Objects will be listed here -->
+                            <div class="text-center text-gray-500 dark:text-gray-400 text-sm">No objects yet</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Connections List -->
+                <div class="mb-6 panel-section">
+                    <div class="flex justify-between items-center cursor-pointer panel-header">
+                        <h3 class="font-medium">Connections</h3>
+                        <span class="panel-toggle">▼</span>
+                    </div>
+                    <div class="panel-content mt-2">
+                        <div id="connection-list" class="bg-white dark:bg-gray-700 rounded p-2">
+                            <div class="text-center text-gray-500 dark:text-gray-400 text-sm">No connections</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Toast notification -->
+        <div id="toast" class="fixed bottom-4 right-4 bg-green-500 text-white p-3 rounded shadow-lg hidden">
+            <span id="toast-message"></span>
+        </div>
+    </div>
+
+    <script>
+    // Check for dark mode and apply it if needed
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+        if (event.matches) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    });
+    
+    // Collapsible panels implementation
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize all panels - we'll expand all by default
+        const panels = document.querySelectorAll('.panel-section');
+        
+        // Store panel states in localStorage
+        function savePanelStates() {
+            const states = {};
+            panels.forEach(panel => {
+                const header = panel.querySelector('.panel-header');
+                if (header) {
+                    const title = header.querySelector('h3').textContent;
+                    states[title] = panel.querySelector('.panel-content').classList.contains('hidden');
+                }
+            });
+            try {
+                localStorage.setItem('panelStates', JSON.stringify(states));
+            } catch (e) {
+                console.log('Could not save panel states to localStorage');
+            }
+        }
+        
+        // Load panel states from localStorage
+        function loadPanelStates() {
+            try {
+                const states = JSON.parse(localStorage.getItem('panelStates'));
+                if (states) {
+                    panels.forEach(panel => {
+                        const header = panel.querySelector('.panel-header');
+                        if (header) {
+                            const title = header.querySelector('h3').textContent;
+                            const content = panel.querySelector('.panel-content');
+                            const toggle = panel.querySelector('.panel-toggle');
+                            
+                            if (states[title]) {
+                                content.classList.add('hidden');
+                                toggle.textContent = '▶';
+                            } else {
+                                content.classList.remove('hidden');
+                                toggle.textContent = '▼';
+                            }
+                        }
+                    });
+                }
+            } catch (e) {
+                console.log('Could not load panel states from localStorage');
+            }
+        }
+        
+        // Add click handler to each panel header
+        panels.forEach(panel => {
+            const header = panel.querySelector('.panel-header');
+            const content = panel.querySelector('.panel-content');
+            const toggle = panel.querySelector('.panel-toggle');
+            
+            if (header && content && toggle) {
+                header.addEventListener('click', () => {
+                    // Toggle panel content visibility
+                    content.classList.toggle('hidden');
+                    
+                    // Update the toggle indicator
+                    if (content.classList.contains('hidden')) {
+                        toggle.textContent = '▶';
+                    } else {
+                        toggle.textContent = '▼';
+                    }
+                    
+                    // Save panel states
+                    savePanelStates();
+                });
+            }
+        });
+        
+        // Try to load saved panel states, or expand all panels by default
+        try {
+            if (localStorage.getItem('panelStates')) {
+                loadPanelStates();
+            } else {
+                // Default: all panels expanded
+                panels.forEach(panel => {
+                    const content = panel.querySelector('.panel-content');
+                    const toggle = panel.querySelector('.panel-toggle');
+                    if (content && toggle) {
+                        content.classList.remove('hidden');
+                        toggle.textContent = '▼';
+                    }
+                });
+            }
+        } catch (e) {
+            console.log('Using default panel states');
+        }
+    });
+    </script>
+
+
+</body></html>
+<!-- <script>
+    delete document.querySelector(".disabletemp")
+</script> -->

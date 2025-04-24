@@ -1,0 +1,791 @@
+<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morphing Maze Arithmetic Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#4F4F8C',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <h1 class="text-3xl font-bold text-center mb-4 text-primary dark:text-indigo-400">Morphing Maze Arithmetic Game</h1>
+        <p class="text-center mb-6">
+            When you pass through a number, your current value becomes: (passing number) ÷ (your current value).<br>
+            You can only move through a number if the division results in an integer.
+        </p>
+
+        <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-3">Maze Setup</h2>
+                
+                <div class="flex mb-4 flex-wrap gap-3">
+                    <div class="flex items-center">
+                        <label for="rows" class="mr-2">Rows:</label>
+                        <input type="number" id="rows" min="2" max="10" value="5" class="w-16 p-1 border rounded text-base dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div class="flex items-center">
+                        <label for="cols" class="mr-2">Columns:</label>
+                        <input type="number" id="cols" min="2" max="10" value="5" class="w-16 p-1 border rounded text-base dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div class="flex items-center">
+                        <label for="startValue" class="mr-2">Starting Value:</label>
+                        <input type="number" id="startValue" min="1" value="2" class="w-16 p-1 border rounded text-base dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <button id="createMazeBtn" class="bg-primary hover:bg-secondary text-white px-3 py-1 rounded">Create Maze</button>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex items-center flex-wrap gap-2 mb-2">
+                        <span>Cell Setup:</span>
+                        <div class="flex items-center">
+                            <input type="radio" id="setupStart" name="cellType" value="start" class="mr-1">
+                            <label for="setupStart" class="mr-3">Start</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="radio" id="setupEnd" name="cellType" value="end" class="mr-1">
+                            <label for="setupEnd" class="mr-3">End</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="radio" id="setupWall" name="cellType" value="wall" class="mr-1">
+                            <label for="setupWall" class="mr-3">Wall</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="radio" id="setupNumber" name="cellType" value="number" checked="" class="mr-1">
+                            <label for="setupNumber" class="mr-3">Number</label>
+                            <input type="number" id="cellValue" min="1" max="99" value="1" class="w-16 p-1 border rounded text-base dark:bg-gray-700 dark:border-gray-600">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3 flex gap-2 flex-wrap">
+                    <button id="clearMazeBtn" class="bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 px-3 py-1 rounded">Clear Maze</button>
+                    <button id="findPathBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">Find Best Path</button>
+                    <button id="resetPositionBtn" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded">Reset Position</button>
+                </div>
+                
+                <div class="mb-3 flex gap-2 flex-wrap">
+                    <button id="exportMazeBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Export Maze</button>
+                    <label for="importMazeInput" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded cursor-pointer">
+                        Import Maze
+                    </label>
+                    <input type="file" id="importMazeInput" accept=".json" class="hidden">
+                </div>
+
+                <div class="mt-4">
+                    <div id="statusMessage" class="font-semibold"></div>
+                    <div id="currentValue" class="text-lg mt-1"></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow">
+                    <h2 class="text-xl font-semibold mb-3">Movement Controls</h2>
+                    <div class="grid grid-cols-3 gap-2 max-w-[200px] mx-auto mb-4">
+                        <div></div>
+                        <button id="moveUp" class="bg-primary hover:bg-secondary text-white p-2 rounded h-12 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                            </svg>
+                        </button>
+                        <div></div>
+                        <button id="moveLeft" class="bg-primary hover:bg-secondary text-white p-2 rounded h-12 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <div></div>
+                        <button id="moveRight" class="bg-primary hover:bg-secondary text-white p-2 rounded h-12 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                        <div></div>
+                        <button id="moveDown" class="bg-primary hover:bg-secondary text-white p-2 rounded h-12 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-3">Maze</h2>
+            <div id="maze" class="grid grid-cols-5 gap-2 max-w-full overflow-x-auto"></div>
+        </div>
+
+        <div class="mt-4 text-gray-600 dark:text-gray-400 text-sm">
+            <div class="flex gap-1 items-center mb-1">
+                <div class="w-4 h-4 bg-blue-500 rounded-sm"></div> <span>Start</span>
+            </div>
+            <div class="flex gap-1 items-center mb-1">
+                <div class="w-4 h-4 bg-green-500 rounded-sm"></div> <span>End</span>
+            </div>
+            <div class="flex gap-1 items-center mb-1">
+                <div class="w-4 h-4 bg-red-500 rounded-sm"></div> <span>Current Position</span>
+            </div>
+            <div class="flex gap-1 items-center mb-1">
+                <div class="w-4 h-4 bg-gray-500 rounded-sm"></div> <span>Wall</span>
+            </div>
+            <div class="flex gap-1 items-center">
+                <div class="w-4 h-4 bg-yellow-200 dark:bg-yellow-700 rounded-sm"></div> <span>Path Solution</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // Game state
+        let maze = [];
+        let rows = 5;
+        let cols = 5;
+        let startRow = null;
+        let startCol = null;
+        let endRow = null;
+        let endCol = null;
+        let currentRow = null;
+        let currentCol = null;
+        let currentValue = 0;
+        let startValue = 2;
+        let solution = null;
+
+        // Cell types: 'empty', 'wall', 'start', 'end', 'number'
+        
+        // Initialize the maze
+        function initializeMaze() {
+            rows = parseInt(document.getElementById('rows').value);
+            cols = parseInt(document.getElementById('cols').value);
+            startValue = parseInt(document.getElementById('startValue').value);
+            
+            // Create empty maze
+            maze = [];
+            for (let i = 0; i < rows; i++) {
+                const row = [];
+                for (let j = 0; j < cols; j++) {
+                    row.push({
+                        type: 'empty',
+                        value: 0
+                    });
+                }
+                maze.push(row);
+            }
+            
+            // Reset positions
+            startRow = null;
+            startCol = null;
+            endRow = null;
+            endCol = null;
+            currentRow = null;
+            currentCol = null;
+            currentValue = startValue;
+            solution = null;
+            
+            renderMaze();
+            updateStatus();
+        }
+        
+        // Render the maze
+        function renderMaze() {
+            const mazeElement = document.getElementById('maze');
+            mazeElement.innerHTML = '';
+            mazeElement.style.gridTemplateColumns = `repeat(${cols}, minmax(50px, 1fr))`;
+            
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const cell = document.createElement('div');
+                    const cellData = maze[i][j];
+                    
+                    // Style the cell
+                    cell.className = 'w-full h-14 flex items-center justify-center border rounded cursor-pointer text-xl font-bold';
+                    
+                    // Set cell background
+                    if (cellData.type === 'start') {
+                        cell.classList.add('bg-blue-500', 'text-white');
+                    } else if (cellData.type === 'end') {
+                        cell.classList.add('bg-green-500', 'text-white');
+                    } else if (cellData.type === 'wall') {
+                        cell.classList.add('bg-gray-500', 'text-white');
+                    } else if (i === currentRow && j === currentCol) {
+                        cell.classList.add('bg-red-500', 'text-white');
+                    } else if (solution && solution.some(p => p.row === i && p.col === j)) {
+                        cell.classList.add('bg-yellow-200', 'dark:bg-yellow-700');
+                    } else if (cellData.type === 'number') {
+                        cell.classList.add('bg-white', 'dark:bg-gray-700');
+                    } else {
+                        cell.classList.add('bg-gray-200', 'dark:bg-gray-600');
+                    }
+                    
+                    // Set cell content
+                    if (cellData.type === 'number') {
+                        cell.textContent = cellData.value;
+                    } else if (cellData.type === 'start') {
+                        cell.textContent = 'S';
+                    } else if (cellData.type === 'end') {
+                        cell.textContent = 'E';
+                    } else if (cellData.type === 'wall') {
+                        cell.textContent = '⨯';
+                    }
+                    
+                    // Set up click handler
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.addEventListener('click', handleCellClick);
+                    
+                    mazeElement.appendChild(cell);
+                }
+            }
+        }
+        
+        // Handle cell click
+        function handleCellClick(event) {
+            const row = parseInt(event.currentTarget.dataset.row);
+            const col = parseInt(event.currentTarget.dataset.col);
+            const cellType = document.querySelector('input[name="cellType"]:checked').value;
+            
+            // Clear solution when making changes
+            solution = null;
+            
+            if (cellType === 'start') {
+                // Remove previous start
+                if (startRow !== null && startCol !== null) {
+                    maze[startRow][startCol].type = 'empty';
+                    maze[startRow][startCol].value = 0;
+                }
+                
+                startRow = row;
+                startCol = col;
+                currentRow = row;
+                currentCol = col;
+                currentValue = startValue;
+                
+                maze[row][col].type = 'start';
+                maze[row][col].value = 0;
+            } else if (cellType === 'end') {
+                // Remove previous end
+                if (endRow !== null && endCol !== null) {
+                    maze[endRow][endCol].type = 'empty';
+                    maze[endRow][endCol].value = 0;
+                }
+                
+                endRow = row;
+                endCol = col;
+                
+                maze[row][col].type = 'end';
+                maze[row][col].value = 0;
+            } else if (cellType === 'wall') {
+                // Don't allow walls on start or end
+                if ((row === startRow && col === startCol) || (row === endRow && col === endCol)) {
+                    return;
+                }
+                
+                maze[row][col].type = 'wall';
+                maze[row][col].value = 0;
+            } else if (cellType === 'number') {
+                // Don't allow numbers on start or end
+                if ((row === startRow && col === startCol) || (row === endRow && col === endCol)) {
+                    return;
+                }
+                
+                const value = parseInt(document.getElementById('cellValue').value);
+                maze[row][col].type = 'number';
+                maze[row][col].value = value;
+            }
+            
+            renderMaze();
+            updateStatus();
+        }
+        
+        // Move functions
+        function tryMove(newRow, newCol) {
+            // Check if out of bounds
+            if (newRow < 0 || newRow >= rows || newCol < 0 || newCol >= cols) {
+                document.getElementById('statusMessage').textContent = 'Cannot move out of bounds';
+                return false;
+            }
+            
+            // Check if wall
+            if (maze[newRow][newCol].type === 'wall') {
+                document.getElementById('statusMessage').textContent = 'Cannot move through a wall';
+                return false;
+            }
+            
+            // Handle number cell
+            if (maze[newRow][newCol].type === 'number') {
+                const cellValue = maze[newRow][newCol].value;
+                
+                // Check if division is possible and results in an integer
+                if (cellValue % currentValue !== 0) {
+                    document.getElementById('statusMessage').textContent = 
+                        `Cannot move: ${cellValue} ÷ ${currentValue} is not an integer`;
+                    return false;
+                }
+                
+                // Update current value
+                currentValue = cellValue / currentValue;
+            }
+            
+            // Move to the new position
+            currentRow = newRow;
+            currentCol = newCol;
+            
+            // Check if reached end
+            if (currentRow === endRow && currentCol === endCol) {
+                document.getElementById('statusMessage').textContent = '🎉 You reached the end! 🎉';
+            } else {
+                document.getElementById('statusMessage').textContent = 'Moved successfully';
+            }
+            
+            renderMaze();
+            updateStatus();
+            return true;
+        }
+        
+        // Update status display
+        function updateStatus() {
+            const currentValueElement = document.getElementById('currentValue');
+            if (currentRow !== null && currentCol !== null) {
+                currentValueElement.textContent = `Current Value: ${currentValue}`;
+            } else {
+                currentValueElement.textContent = '';
+            }
+        }
+        
+        // Reset position
+        function resetPosition() {
+            if (startRow !== null && startCol !== null) {
+                currentRow = startRow;
+                currentCol = startCol;
+                currentValue = startValue;
+                solution = null;
+                document.getElementById('statusMessage').textContent = 'Position reset to start';
+                renderMaze();
+                updateStatus();
+            } else {
+                document.getElementById('statusMessage').textContent = 'Set a start position first';
+            }
+        }
+        
+        // Find the best path
+        function findBestPath() {
+            if (startRow === null || startCol === null || endRow === null || endCol === null) {
+                document.getElementById('statusMessage').textContent = 'Set start and end positions first';
+                return;
+            }
+            
+            solution = null;
+            
+            // BFS to find shortest path
+            const queue = [{
+                row: startRow,
+                col: startCol,
+                value: startValue,
+                path: []
+            }];
+            
+            const visited = new Set(); // We'll use "row,col,value" as keys
+            
+            while (queue.length > 0) {
+                const current = queue.shift();
+                
+                // Check if reached end
+                if (current.row === endRow && current.col === endCol) {
+                    solution = current.path.concat({row: current.row, col: current.col});
+                    document.getElementById('statusMessage').textContent = 
+                        `Found a path with ${solution.length - 1} moves!`;
+                    renderMaze();
+                    return;
+                }
+                
+                // Skip if already visited this state
+                const stateKey = `${current.row},${current.col},${current.value}`;
+                if (visited.has(stateKey)) continue;
+                visited.add(stateKey);
+                
+                // Check all 4 directions
+                const directions = [
+                    {dr: -1, dc: 0}, // Up
+                    {dr: 1, dc: 0},  // Down
+                    {dr: 0, dc: -1}, // Left
+                    {dr: 0, dc: 1}   // Right
+                ];
+                
+                for (const dir of directions) {
+                    const newRow = current.row + dir.dr;
+                    const newCol = current.col + dir.dc;
+                    
+                    // Check if out of bounds
+                    if (newRow < 0 || newRow >= rows || newCol < 0 || newCol >= cols) continue;
+                    
+                    // Check if wall
+                    if (maze[newRow][newCol].type === 'wall') continue;
+                    
+                    let newValue = current.value;
+                    
+                    // Handle number cell
+                    if (maze[newRow][newCol].type === 'number') {
+                        const cellValue = maze[newRow][newCol].value;
+                        
+                        // Check if division is possible and results in an integer
+                        if (cellValue % newValue !== 0) continue;
+                        
+                        // Update current value
+                        newValue = cellValue / newValue;
+                    }
+                    
+                    // Add to queue
+                    queue.push({
+                        row: newRow,
+                        col: newCol,
+                        value: newValue,
+                        path: current.path.concat({row: current.row, col: current.col})
+                    });
+                }
+            }
+            
+            document.getElementById('statusMessage').textContent = 'No solution found';
+        }
+        
+        // Export maze to JSON file
+        function exportMaze() {
+            // Create a data object with all the maze information
+            const mazeData = {
+                maze: maze,
+                rows: rows,
+                cols: cols,
+                startRow: startRow,
+                startCol: startCol,
+                endRow: endRow,
+                endCol: endCol,
+                startValue: startValue
+            };
+            
+            // Convert to JSON string
+            const jsonString = JSON.stringify(mazeData, null, 2);
+            
+            // Create a blob and downloadable link
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            // Create temporary link and trigger download
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'morphing-maze.json';
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            document.getElementById('statusMessage').textContent = 'Maze exported successfully';
+        }
+        
+        // Import maze from JSON file
+        function importMaze(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    // Parse the JSON data
+                    const mazeData = JSON.parse(e.target.result);
+                    
+                    // Update all maze properties
+                    maze = mazeData.maze;
+                    rows = mazeData.rows;
+                    cols = mazeData.cols;
+                    startRow = mazeData.startRow;
+                    startCol = mazeData.startCol;
+                    endRow = mazeData.endRow;
+                    endCol = mazeData.endCol;
+                    startValue = mazeData.startValue;
+                    
+                    // Update UI controls to match the imported maze
+                    document.getElementById('rows').value = rows;
+                    document.getElementById('cols').value = cols;
+                    document.getElementById('startValue').value = startValue;
+                    
+                    // Reset current position to start
+                    currentRow = startRow;
+                    currentCol = startCol;
+                    currentValue = startValue;
+                    solution = null;
+                    
+                    // Render the maze
+                    renderMaze();
+                    updateStatus();
+                    
+                    document.getElementById('statusMessage').textContent = 'Maze imported successfully';
+                } catch (error) {
+                    console.error('Error importing maze:', error);
+                    document.getElementById('statusMessage').textContent = 'Error importing maze: Invalid file format';
+                }
+                
+                // Clear the file input
+                event.target.value = '';
+            };
+            
+            reader.onerror = function() {
+                document.getElementById('statusMessage').textContent = 'Error reading file';
+                // Clear the file input
+                event.target.value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // Set up event listeners
+        document.getElementById('createMazeBtn').addEventListener('click', initializeMaze);
+        document.getElementById('clearMazeBtn').addEventListener('click', initializeMaze);
+        document.getElementById('resetPositionBtn').addEventListener('click', resetPosition);
+        document.getElementById('findPathBtn').addEventListener('click', findBestPath);
+        document.getElementById('exportMazeBtn').addEventListener('click', exportMaze);
+        document.getElementById('importMazeInput').addEventListener('change', importMaze);
+        
+        document.getElementById('moveUp').addEventListener('click', () => {
+            if (currentRow !== null) tryMove(currentRow - 1, currentCol);
+        });
+        
+        document.getElementById('moveDown').addEventListener('click', () => {
+            if (currentRow !== null) tryMove(currentRow + 1, currentCol);
+        });
+        
+        document.getElementById('moveLeft').addEventListener('click', () => {
+            if (currentCol !== null) tryMove(currentRow, currentCol - 1);
+        });
+        
+        document.getElementById('moveRight').addEventListener('click', () => {
+            if (currentCol !== null) tryMove(currentRow, currentCol + 1);
+        });
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (currentRow === null || currentCol === null) return;
+            
+            switch (e.key) {
+                case 'ArrowUp':
+                    tryMove(currentRow - 1, currentCol);
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                    tryMove(currentRow + 1, currentCol);
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                    tryMove(currentRow, currentCol - 1);
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    tryMove(currentRow, currentCol + 1);
+                    e.preventDefault();
+                    break;
+            }
+        });
+        
+        // Load predefined maze from the book image - more accurate version
+        function loadBookMaze() {
+            // Create a grid that better matches the book maze's dimensions
+            rows = 21;
+            cols = 12;
+            document.getElementById('rows').value = rows;
+            document.getElementById('cols').value = cols;
+            
+            // Set starting value to 3 as indicated in the image
+            startValue = 3;
+            document.getElementById('startValue').value = startValue;
+            
+            // Create empty maze
+            maze = [];
+            for (let i = 0; i < rows; i++) {
+                const row = [];
+                for (let j = 0; j < cols; j++) {
+                    row.push({
+                        type: 'empty',
+                        value: 0
+                    });
+                }
+                maze.push(row);
+            }
+            
+            // Set start and end positions based on the book image
+            startRow = 0;
+            startCol = 4;
+            maze[startRow][startCol].type = 'start';
+            
+            endRow = 20;
+            endCol = 4;
+            maze[endRow][endCol].type = 'end';
+            
+            // Reset current position to start
+            currentRow = startRow;
+            currentCol = startCol;
+            currentValue = startValue;
+            solution = null;
+            
+            // Define walls - the crossed-out areas in the book maze
+            // This is a more comprehensive mapping of the walls based on the image
+            const walls = [
+                // Top section
+                [0,0], [0,1], [0,2], [0,3], [0,5], [0,6], [0,7], [0,8], [0,9], [0,10], [0,11],
+                [1,0], [1,1], [1,2], [1,3], [1,5], [1,6], [1,7], [1,8], [1,9], [1,10], [1,11],
+                
+                // Middle sections
+                [2,0], [2,1], [2,2], [2,6], [2,7], [2,8], [2,9], [2,10], [2,11],
+                [3,0], [3,1], [3,2], [3,6], [3,7], [3,8], [3,9], [3,10], [3,11],
+                [4,0], [4,1], [4,2], [4,4], [4,5], [4,6], [4,8], [4,9], [4,10], [4,11],
+                [5,0], [5,1], [5,2], [5,4], [5,5], [5,6], [5,8], [5,9], [5,10], [5,11],
+                [6,0], [6,1], [6,2], [6,4], [6,5], [6,6], [6,8], [6,9], [6,10], [6,11],
+                [7,0], [7,1], [7,2], [7,4], [7,5], [7,6], [7,8], [7,9], [7,10], [7,11],
+                [8,0], [8,1], [8,3], [8,4], [8,5], [8,6], [8,8], [8,9], [8,10], [8,11],
+                [9,0], [9,1], [9,3], [9,4], [9,5], [9,6], [9,8], [9,9], [9,10], [9,11],
+                [10,0], [10,1], [10,3], [10,4], [10,5], [10,6], [10,7], [10,10], [10,11],
+                [11,0], [11,1], [11,3], [11,4], [11,5], [11,7], [11,10], [11,11],
+                [12,0], [12,1], [12,3], [12,4], [12,7], [12,8], [12,10], [12,11],
+                [13,0], [13,1], [13,3], [13,4], [13,7], [13,8], [13,10], [13,11],
+                [14,0], [14,1], [14,3], [14,4], [14,6], [14,7], [14,9], [14,10], [14,11],
+                [15,0], [15,1], [15,3], [15,4], [15,6], [15,7], [15,9], [15,10], [15,11],
+                [16,0], [16,1], [16,3], [16,6], [16,9], [16,10], [16,11],
+                [17,0], [17,1], [17,3], [17,6], [17,9], [17,10], [17,11],
+                [18,0], [18,1], [18,3], [18,5], [18,6], [18,7], [18,8], [18,9], [18,10], [18,11],
+                [19,0], [19,1], [19,5], [19,6], [19,7], [19,8], [19,9], [19,10], [19,11],
+                
+                // Bottom section
+                [20,0], [20,1], [20,2], [20,3], [20,5], [20,6], [20,7], [20,8], [20,9], [20,10], [20,11],
+            ];
+            
+            for (const [r, c] of walls) {
+                if (r < rows && c < cols) {
+                    maze[r][c].type = 'wall';
+                }
+            }
+            
+            // Place numbers from the book maze more accurately
+            const numbers = [
+                // Numbers from top to bottom, trying to match the original layout
+                {row: 2, col: 3, value: 9},
+                {row: 2, col: 4, value: 3},
+                {row: 2, col: 5, value: 9},
+                
+                {row: 3, col: 3, value: 18},
+                {row: 3, col: 4, value: 36},
+                {row: 3, col: 5, value: 72},
+                
+                {row: 4, col: 3, value: 72},
+                {row: 4, col: 7, value: 81},
+                
+                {row: 5, col: 3, value: 36},
+                {row: 5, col: 7, value: 63},
+                
+                {row: 6, col: 3, value: 18},
+                {row: 6, col: 7, value: 42},
+                
+                {row: 7, col: 3, value: 36},
+                {row: 7, col: 7, value: 28},
+                
+                {row: 8, col: 2, value: 24},
+                {row: 8, col: 7, value: 56},
+                
+                {row: 9, col: 2, value: 12},
+                {row: 9, col: 7, value: 42},
+                
+                {row: 10, col: 2, value: 48},
+                {row: 10, col: 8, value: 28},
+                {row: 10, col: 9, value: 64},
+                
+                {row: 11, col: 2, value: 24},
+                {row: 11, col: 6, value: 35},
+                {row: 11, col: 8, value: 35},
+                {row: 11, col: 9, value: 70},
+                
+                {row: 12, col: 2, value: 48},
+                {row: 12, col: 5, value: 30},
+                {row: 12, col: 6, value: 20},
+                {row: 12, col: 9, value: 42},
+                
+                {row: 13, col: 2, value: 24},
+                {row: 13, col: 5, value: 60},
+                {row: 13, col: 6, value: 40},
+                {row: 13, col: 9, value: 28},
+                
+                {row: 14, col: 2, value: 48},
+                {row: 14, col: 5, value: 30},
+                {row: 14, col: 8, value: 56},
+                
+                {row: 15, col: 2, value: 24},
+                {row: 15, col: 5, value: 15},
+                {row: 15, col: 8, value: 42},
+                
+                {row: 16, col: 2, value: 12},
+                {row: 16, col: 4, value: 24},
+                {row: 16, col: 5, value: 30},
+                {row: 16, col: 7, value: 35},
+                {row: 16, col: 8, value: 28},
+                
+                {row: 17, col: 2, value: 24},
+                {row: 17, col: 4, value: 12},
+                {row: 17, col: 5, value: 15},
+                {row: 17, col: 7, value: 35},
+                {row: 17, col: 8, value: 70},
+                
+                {row: 18, col: 2, value: 12},
+                {row: 18, col: 4, value: 24},
+                
+                {row: 19, col: 2, value: 24},
+                {row: 19, col: 3, value: 12},
+                {row: 19, col: 4, value: 30}
+            ];
+            
+            for (const num of numbers) {
+                if (num.row < rows && num.col < cols) {
+                    maze[num.row][num.col].type = 'number';
+                    maze[num.row][num.col].value = num.value;
+                }
+            }
+            
+            renderMaze();
+            updateStatus();
+            document.getElementById('statusMessage').textContent = 'Morphing Maze from the book loaded!';
+        }
+        
+        // Add a button for loading the predefined maze
+        const loadBookMazeBtn = document.createElement('button');
+        loadBookMazeBtn.id = 'loadBookMazeBtn';
+        loadBookMazeBtn.className = 'bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded';
+        loadBookMazeBtn.textContent = 'Load Book Maze';
+        loadBookMazeBtn.addEventListener('click', loadBookMaze);
+        
+        // Insert it before the export button
+        const exportBtn = document.getElementById('exportMazeBtn');
+        exportBtn.parentNode.insertBefore(loadBookMazeBtn, exportBtn);
+        
+        // Initialize on load
+        window.addEventListener('load', initializeMaze);
+    </script>
+
+
+</body></html>

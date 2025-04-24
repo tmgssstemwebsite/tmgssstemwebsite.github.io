@@ -368,8 +368,8 @@
         "value": 0
       },
       {
-        "type": "empty",
-        "value": 0
+        "type": "number",
+        "value": 63
       }
     ],
     [
@@ -426,12 +426,12 @@
         "value": 0
       },
       {
-        "type": "empty",
+        "type": "wall",
         "value": 0
       },
       {
-        "type": "number",
-        "value": 63
+        "type": "empty",
+        "value": 0
       }
     ],
     [

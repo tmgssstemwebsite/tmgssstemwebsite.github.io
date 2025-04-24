@@ -6,60 +6,60 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
         "value": 9
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       }
     ],
     [
@@ -120,8 +120,8 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       }
     ],
     [
@@ -130,56 +130,56 @@
         "value": 69
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
         "value": 36
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
         "value": 72
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
@@ -188,27 +188,23 @@
     ],
     [
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
       },
       {
@@ -228,11 +224,11 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
       },
       {
-        "type": "wall",
+        "type": "empty",
         "value": 0
       },
       {
@@ -244,14 +240,18 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       }
     ],
     [
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
@@ -266,11 +266,7 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
       },
       {
@@ -290,11 +286,11 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
       },
       {
-        "type": "wall",
+        "type": "empty",
         "value": 0
       },
       {
@@ -306,34 +302,38 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       }
     ],
     [
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
         "value": 18
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
@@ -360,34 +360,22 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       }
     ],
     [
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
-      },
-      {
-        "type": "wall",
-        "value": 0
-      },
-      {
-        "type": "number",
-        "value": 1
       },
       {
         "type": "wall",
@@ -398,36 +386,48 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
@@ -436,20 +436,8 @@
     ],
     [
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
-      },
-      {
-        "type": "wall",
-        "value": 0
-      },
-      {
-        "type": "number",
-        "value": 1
       },
       {
         "type": "wall",
@@ -460,8 +448,20 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
+      },
+      {
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
@@ -484,34 +484,34 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       }
     ],
     [
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
         "value": 30
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
@@ -530,11 +530,7 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
       },
       {
@@ -546,16 +542,20 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       }
     ],
     [
@@ -568,15 +568,11 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
       },
       {
@@ -584,8 +580,12 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
@@ -596,8 +596,8 @@
         "value": 35
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
@@ -608,12 +608,12 @@
         "value": 24
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
@@ -646,11 +646,7 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
       },
       {
@@ -658,8 +654,12 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
@@ -684,90 +684,70 @@
     ],
     [
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
         "value": 54
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       }
     ],
     [
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
-      },
-      {
-        "type": "wall",
-        "value": 0
-      },
-      {
-        "type": "wall",
-        "value": 0
-      },
-      {
-        "type": "wall",
-        "value": 0
-      },
-      {
-        "type": "number",
-        "value": 1
       },
       {
         "type": "wall",
@@ -786,11 +766,7 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
       },
       {
@@ -802,34 +778,38 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
+      },
+      {
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       }
     ],
     [
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
-      },
-      {
-        "type": "wall",
-        "value": 0
-      },
-      {
-        "type": "wall",
-        "value": 0
-      },
-      {
-        "type": "wall",
-        "value": 0
-      },
-      {
-        "type": "number",
-        "value": 1
       },
       {
         "type": "wall",
@@ -848,12 +828,32 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
@@ -870,11 +870,7 @@
     ],
     [
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
       },
       {
@@ -890,8 +886,12 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
@@ -918,42 +918,22 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       }
     ],
     [
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
-      },
-      {
-        "type": "wall",
-        "value": 0
-      },
-      {
-        "type": "wall",
-        "value": 0
-      },
-      {
-        "type": "wall",
-        "value": 0
-      },
-      {
-        "type": "number",
-        "value": 1
       },
       {
         "type": "wall",
@@ -972,30 +952,50 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
+      },
+      {
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       }
     ],
     [
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
@@ -1018,32 +1018,32 @@
         "value": 56
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
@@ -1056,11 +1056,7 @@
     ],
     [
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
       },
       {
@@ -1084,15 +1080,15 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "number",
-        "value": 1
-      },
-      {
         "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
+      },
+      {
+        "type": "empty",
         "value": 0
       },
       {
@@ -1104,16 +1100,20 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       }
     ],
     [
@@ -1146,15 +1146,11 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
       },
       {
@@ -1162,8 +1158,12 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
@@ -1174,70 +1174,70 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       }
     ],
     [
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
         "value": 20
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       }
     ],
     [
@@ -1250,19 +1250,15 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
-      },
-      {
-        "type": "wall",
+        "type": "empty",
         "value": 0
       },
       {
@@ -1290,12 +1286,16 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "wall",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
+      },
+      {
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
@@ -1312,44 +1312,44 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
         "value": 54
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
@@ -1374,16 +1374,16 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "wall",
@@ -1444,36 +1444,36 @@
         "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "number",
         "value": 9
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
-        "type": "number",
-        "value": 1
+        "type": "empty",
+        "value": 0
       },
       {
         "type": "end",
